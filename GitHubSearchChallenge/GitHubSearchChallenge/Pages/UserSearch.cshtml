@@ -1,0 +1,107 @@
+﻿@page
+@model UserSearchModel
+@{
+    ViewData["Title"] = "GitHub User Search";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>This page uses GitHub API to search GitHub users.</p>
+
+<form method="post">
+    <div class="form-group">
+
+        <label for="Keyword" class="col-form-label-lg">Keyword</label>
+
+        <div class="col-auto">
+            <input type="text" asp-for="Keyword" class="form-control" />
+        </div>
+
+        <label for="ResultsPerPage" class="col-form-label-lg">Results Per Page</label>
+        <div class="col-auto">
+            <select name="ResultsPerPage" class="form-control" asp-for="ResultsPerPage">
+                <option value="">Select</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+
+        <div class="col-auto" style="padding-top:2em">
+            <input type="submit" value="Submit" class="btn btn-dark" />
+        </div>
+
+        @if (Model.SearchResult != null)
+        {
+            <div class="container" style="padding-top:2em">
+                <div class="row">
+                    <div class="col-auto">
+                        Results Per Page: @Html.DisplayFor(m => Model.ResultsPerPage)
+                    </div>
+                    <div class="col-auto">
+                        Displaying Page @Html.DisplayFor(m => Model.CurrentPage) Of @Html.DisplayFor(m => Model.NumberOfPages)
+                    </div>
+                    <div class="col-auto">
+                        Total Results Count: @(Model.SearchResult.Total_Count > 1000 ? 1000 : Model.SearchResult.Total_Count)
+                    </div>
+                    @if (Model.SearchResult.Total_Count > 1000)
+                    {
+                        <div class="col-auto">
+                            <span class="text-danger">Results are limited to 1,000 per API Documentation</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div>
+            @if (Model.SearchResult != null)
+            {
+                <table class="table table-striped border">
+                    <tr class="table-secondary">
+                        <th>
+                            @Html.DisplayNameFor(m => Model.SearchResult.Items[0].Login)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(m => Model.SearchResult.Items[0].Avatar_Url)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(m => Model.SearchResult.Items[0].Followers)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(m => Model.SearchResult.Items[0].Bio)
+                        </th>
+                    </tr>
+                    @foreach (var item in Model.SearchResult.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Content(item.Html_Url)">@Html.DisplayFor(m => item.Login)</a>
+                            </td>
+                            <td>
+                                <img src="@Url.Content(item.Avatar_Url)" alt="Image" height="40" width="40" />
+                            </td>
+                            <td>
+                                @Html.DisplayFor(m => item.Followers)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(m => item.Bio)
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item"><a asp-page="/UserSearch" asp-route-CurrentPage="@(Model.CurrentPage > 1 ? Model.CurrentPage - 1 : 1)" asp-route-Keyword="@(Model.Keyword)" asp-route-ResultsPerPage="@(Model.ResultsPerPage)" class="page-link">Previous<i class="fas fa-fast-backward"></i></a></li>
+                        <li class="page-item"><a asp-page="/UserSearch" asp-route-CurrentPage="@(Model.CurrentPage >= Model.NumberOfPages ? Model.NumberOfPages : Model.CurrentPage + 1)" asp-route-Keyword="@(Model.Keyword)" asp-route-ResultsPerPage="@(Model.ResultsPerPage)" class="page-link">Next<i class="fas fa-fast-backward"></i></a></li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</form>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
